@@ -1,22 +1,19 @@
 module.exports = class HeatingSwitch {
   constructor() {
-    // Check things are working!
+    this._heatingIsOn = false;
+  }
 
-    var heatingIsOn = false;
+  isOn() {
+    return this._heatingIsOn;
+  }
 
-    this.isOn = function () {
-      return heatingIsOn;
+  setOn(turnOn) {
+    if (turnOn) {
+      // Open/close the relay.
+    } else {
+      // Open/close the relay.
     }
-
-    this.setOn = function (turnOn) {
-      if (turnOn) {
-        // Open/close the relay.
-      } else {
-        // Open/close the relay.
-      }
-      heatingIsOn = turnOn;
-    }
-
-    console.log("Everything is brilliant.");
+    this._heatingIsOn = turnOn;
+    return true;
   }
 }
