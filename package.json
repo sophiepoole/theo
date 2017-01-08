@@ -5,13 +5,17 @@
   "main": "app.js",
   "scripts": {
     "start": "node app.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha"
   },
   "license": "MIT",
   "repository": "https://github.com/sophiedrake/theo",
   "dependencies": {
     "body-parser": "^1.15.2",
+    "chai": "^3.5.0",
+    "chai-http": "^3.0.0",
     "express": "^4.14.0",
-    "moment": "^2.17.1"
+    "mocha": "^3.2.0",
+    "moment": "^2.17.1",
+    "winston": "^2.3.0"
   }
 }

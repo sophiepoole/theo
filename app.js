@@ -1,16 +1,26 @@
-const express = require('express')
+const express = require("express")
 var app = express()
 
-var HeatingSwitch = require('./HeatingSwitch.js');
-app.locals.heating = new HeatingSwitch();
+const winston = require("winston");
+app.locals.logger = new (winston.Logger)({
+  transports: [
+    new (winston.transports.Console)({"timestamp": true})
+  ]
+});
+app.locals.logger.info("Application started");
 
-var Schedule = require('./Schedule.js');
-app.locals.schedule = new Schedule();
+const Scheduler = require("./Scheduler.js");
+app.locals.scheduler = new Scheduler(app.locals.logger);
 
-const INDEX = require('./routes/index');
-app.use('/', INDEX);
+const Thermostat = require("./Thermostat.js");
+app.locals.thermostat = new Thermostat(app.locals.scheduler, app.locals.logger);
+
+const INDEX = require("./routes/index");
+app.use("/", INDEX);
 
 const PORT = process.env.PORT || 3000
-app.listen(PORT, function(req, res) {
-  console.log(`Listening on port ${PORT}`);
+app.listen(PORT, (req, res) => {
+  app.locals.logger.info(`Listening on port ${PORT}`);
 });
+
+module.exports = app;
