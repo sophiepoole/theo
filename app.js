@@ -4,7 +4,10 @@ var app = express()
 const winston = require("winston");
 app.locals.logger = new (winston.Logger)({
   transports: [
-    new (winston.transports.Console)({"timestamp": true})
+    new (winston.transports.Console)(
+        {"timestamp": true,
+        "level": "debug"}
+    )
   ]
 });
 app.locals.logger.info("Application started");
