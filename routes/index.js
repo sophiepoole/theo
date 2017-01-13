@@ -17,6 +17,15 @@ router.get('/schedule/:type', function(req, res) {
   return sendError(res, `Schedule type "${req.params.type}" is invalid`);
 });
 
+router.get('/schedule/:type/is-active', function(req, res) {
+  if (req.params.type === "one-off") {
+    return res.json(
+        {"isActive": req.app.locals.scheduler.isOneOffScheduleActive()}
+    );
+  }
+  return sendError(res, `Schedule type "${req.params.type}" is invalid`);
+});
+
 router.post('/schedule/:type', bodyParser.json(), function(req, res) {
   try {
     var scheduler = req.app.locals.scheduler;
@@ -29,6 +38,10 @@ router.post('/schedule/:type', bodyParser.json(), function(req, res) {
   } catch(e) {
     return sendError(res, e.message);
   }
+});
+
+router.get('/scheduled-temperature-now', function(req, res) {
+  return res.json(req.app.locals.scheduler.scheduledTemperatureNow());
 });
 
 module.exports = router;

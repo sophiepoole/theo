@@ -1,4 +1,4 @@
-module.exports = class HeatingSwitch {
+class HeatingSwitch {
   constructor() {
     this._heatingIsOn = false;
   }
@@ -17,3 +17,5 @@ module.exports = class HeatingSwitch {
     return true;
   }
 }
+
+exports.HeatingSwitch = HeatingSwitch;

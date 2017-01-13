@@ -9,11 +9,12 @@ app.locals.logger = new (winston.Logger)({
 });
 app.locals.logger.info("Application started");
 
-const Scheduler = require("./Scheduler.js");
-app.locals.scheduler = new Scheduler(app.locals.logger);
+const scheduler = require("./scheduler.js");
+app.locals.scheduler = new scheduler.Scheduler(app.locals.logger);
 
-const Thermostat = require("./Thermostat.js");
-app.locals.thermostat = new Thermostat(app.locals.scheduler, app.locals.logger);
+const thermostat = require("./thermostat.js");
+app.locals.thermostat = new thermostat.Thermostat(app.locals.scheduler,
+                                                  app.locals.logger);
 
 const INDEX = require("./routes/index");
 app.use("/", INDEX);

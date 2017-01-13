@@ -10,7 +10,7 @@ const dateFormat = "YYYY-MM-DD";
 // Repeated schedule format:
 // {"startDate": "2017-05-28", schedule": [...]}
 
-module.exports = class Scheduler {
+class Scheduler {
   constructor(logger) {
     this._logger = logger;
     this._savedSchedulePath = "./schedule.data";
@@ -83,7 +83,7 @@ module.exports = class Scheduler {
   setOneOffSchedule(json) {
     const schedule = this._getScheduleFromJson(json);
     this._validateSchedule(schedule);
-    if (!"startDate" in json) {
+    if (!("startDate" in json)) {
       throw new Error(`No "startDate" key in ${JSON.stringify(json)}`);
     }
     if (json.startDate != null) {
@@ -98,20 +98,28 @@ module.exports = class Scheduler {
     return this.getOneOffSchedule();
   }
 
+  isOneOffScheduleActive() {
+    return moment().isSame(this._oneOffScheduleStartDate, "day");
+  }
+
   scheduledTemperatureNow() {
-    var schedule = this._repeatedSchedule;
-    if (moment().isSame(this._oneOffScheduleStartDate, "day")) {
+    var schedule;
+    if (this.isOneOffScheduleActive()) {
       schedule = this._oneOffSchedule;
+    } else {
+      schedule = this._repeatedSchedule;
     }
+
     var result = null;
     schedule.forEach( (period) => {
       const start = moment(period.start, timeFormat, true);
       const end   = moment(period.end,   timeFormat, true);
-      if (now.isBetween(start, end, null, "[)")) {
+      if (moment().isBetween(start, end, null, "[)")) {
         result = period.temperature;
       }
     });
-    return result;
+
+    return {"temperature": result};
   }
 
   save() {
@@ -133,4 +141,8 @@ module.exports = class Scheduler {
     this._oneOffScheduleStartDate = state.oneOffScheduleStartDate;
     this._logger.info("Loaded schedule from disk: " + JSON.stringify(state));
   }
-}
+};
+
+exports.Scheduler = Scheduler;
+exports.timeFormat = timeFormat;
+exports.dateFormat = dateFormat;
