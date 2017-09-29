@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <link rel="shortcut icon" href="static/favicon.ico" type="image/x-icon">
+
+        <link rel="stylesheet" href="static/css/jquery-ui-1.9.2.custom/jquery-ui-1.9.2.custom.min.css">
+        <script src="static/js/jquery.min.js"></script>
+        <script src="static/js/jquery-ui.min.js"></script>
+
+        <script src="static/js/socket.io.js"></script>
+
+        <script src="static/js/application.js"></script>
+
+        <style>
+@font-face {
+    font-family: 'Droid Sans Mono';
+    font-style: normal;
+    font-weight: 400;
+    src: url('static/css/DroidSansMono-Regular.ttf') format('truetype');
+}
+
+body {
+    font-family: 'Droid Sans Mono', monospace;
+    color: #404040;
+}
+
+.current-reading {
+    display: inline-block;
+    vertical-align: top;
+    width: 32%;
+}
+
+.current-reading-img {
+    float: left;
+    width: 64px;
+}
+
+.current-reading-value {
+    float: left;
+    font-size: 45px;
+}
+
+#dial-svg-container {
+    margin-right: 14px;
+}
+
+#thermometer-svg {
+    margin-left: 8px;
+}
+
+#flame-svg {
+    margin-left: 5px;
+}
+
+#heating-state {
+    margin-top: 40px;
+}
+
+.svg-red {
+    fill: #c73131;
+}
+
+.svg-outline {
+    fill: #404040;
+}
+
+.ui-widget-header {
+    background: #c73131;
+}
+.ui-widget-content {
+    border: none;
+    border-color: #c73131;
+}
+.ui-slider .ui-slider-range {
+    border: 2px solid;
+}
+
+.temperature-slider {
+    display: inline-block;
+    margin-bottom: 0.2em;
+    margin-left: 1px;
+    margin-right: 1px;
+}
+.slider-widget {
+    width: 100%;
+}
+.slider-value, .slider-time {
+    width: 100%;
+    text-align: center;
+    margin-top: 0.2em;
+    margin-bottom: 0.2em;
+}
+.slider-value {
+    color: #c73131;
+}
+
+        </style>
+
+    </head>
+    <body>
+
+        <div class="current-reading">
+            <div class="current-reading-img">
+                <svg id="thermometer-svg" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 512 512" style="enable-background:new 0 0 512 512;" xml:space="preserve">
+                    <path class="svg-red" d="M298.464,358.076V186.348h-84.927v171.727c-20.857,13.796-34.623,37.449-34.623,64.33 c0,42.574,34.512,77.087,77.087,77.087s77.087-34.512,77.087-77.087C333.087,395.526,319.321,371.872,298.464,358.076z"/>
+                    <g>
+                    <path class="svg-outline" d="M310.972,351.666c0-10.297,0-286.396,0-296.693C310.972,24.661,286.311,0,256,0 s-54.972,24.661-54.972,54.972c0,10.305,0,286.4,0,296.693c-21.798,16.933-34.623,42.898-34.623,70.739 C166.405,471.807,206.598,512,256,512s89.595-40.193,89.595-89.595C345.595,394.564,332.77,368.6,310.972,351.666z M226.044,54.972 c0-16.517,13.439-29.956,29.956-29.956s29.956,13.439,29.956,29.956V86.92h-25.795c-6.91,0-12.508,5.599-12.508,12.508 s5.599,12.508,12.508,12.508h25.795v12.975h-25.795c-6.91,0-12.508,5.599-12.508,12.508s5.599,12.508,12.508,12.508h25.795v23.912 h-59.912L226.044,54.972L226.044,54.972z M256,486.984c-35.61,0-64.579-28.969-64.579-64.579c0-21.731,10.847-41.881,29.014-53.898 c3.502-2.317,5.607-6.232,5.607-10.432V198.856h59.912v159.219c0,4.199,2.106,8.115,5.607,10.432 c18.168,12.018,29.014,32.168,29.014,53.898C320.579,458.015,291.61,486.984,256,486.984z"/>
+                    <path class="svg-outline" d="M293.001,409.897c-6.91,0-12.508,5.599-12.508,12.508c0,13.505-10.987,24.493-24.493,24.493 c-6.91,0-12.508,5.599-12.508,12.508s5.599,12.508,12.508,12.508c27.299,0,49.509-22.208,49.509-49.509 C305.509,415.497,299.909,409.897,293.001,409.897z"/>
+                    </g>
+                </svg>
+            </div>
+            <div class="current-reading-value">
+                23
+            </div>
+        </div>
+
+        <div class="current-reading">
+            <div id="dial-svg-container" class="current-reading-img">
+                <svg id="dial-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 41.73">
+                    <g>
+                    <path class="svg-outline" d="M25,46.09A17.73,17.73,0,1,1,37.55,40.9,17.68,17.68,0,0,1,25,46.09Zm0-33.38a15.64,15.64,0,1,0,11.07,4.58A15.6,15.6,0,0,0,25,12.72Z" transform="translate(-1 -4.36)"/>
+                    <g>
+                    <path class="svg-outline" d="M4.13,29.4H2a1,1,0,1,1,0-2.09H4.13A1,1,0,0,1,4.13,29.4Z" transform="translate(-1 -4.36)"/>
+                    </g>
+                    <g id="_Gruppe_2" data-name="&lt;Gruppe&gt;">
+                    <path id="_Pfad_2" data-name="&lt;Pfad&gt;" class="svg-outline" d="M48,29.4H45.87a1,1,0,0,1,0-2.09H48A1,1,0,0,1,48,29.4Z" transform="translate(-1 -4.36)"/>
+                    </g>
+                    <path class="svg-outline" d="M2.83,35.34a1,1,0,0,1-.27-2.05l2-.54a1,1,0,1,1,.54,2l-2,.54A1,1,0,0,1,2.83,35.34Z" transform="translate(-1 -4.36)"/>
+                    <path class="svg-outline" d="M45.16,24a1,1,0,0,1-.27-2.05l2-.54a1,1,0,0,1,.54,2l-2,.54A1,1,0,0,1,45.16,24Z" transform="translate(-1 -4.36)"/>
+                    <path class="svg-outline" d="M5.12,40.88a1,1,0,0,1-.52-1.95l1.81-1a1,1,0,0,1,1,1.81l-1.81,1A1,1,0,0,1,5.12,40.88Z" transform="translate(-1 -4.36)"/>
+                    <path class="svg-outline" d="M43.08,19A1,1,0,0,1,42.56,17l1.81-1a1,1,0,0,1,1,1.81l-1.81,1A1,1,0,0,1,43.08,19Z" transform="translate(-1 -4.36)"/>
+                    <path class="svg-outline" d="M39.76,14.65A1,1,0,0,1,39,12.86l1.48-1.48A1,1,0,1,1,42,12.86L40.5,14.34A1,1,0,0,1,39.76,14.65Z" transform="translate(-1 -4.36)"/>
+                    <path class="svg-outline" d="M35.44,11.33a1,1,0,0,1-.9-1.57l1-1.81a1,1,0,1,1,1.81,1l-1,1.81A1,1,0,0,1,35.44,11.33Z" transform="translate(-1 -4.36)"/>
+                    <path class="svg-outline" d="M30.41,9.24a1,1,0,0,1-1-1.31l0.54-2a1,1,0,1,1,2,.54l-0.54,2A1,1,0,0,1,30.41,9.24Z" transform="translate(-1 -4.36)"/>
+                    <path class="svg-outline" d="M19.6,9.24a1,1,0,0,1-1-.77l-0.54-2a1,1,0,1,1,2-.54l0.54,2A1,1,0,0,1,19.6,9.24Z" transform="translate(-1 -4.36)"/>
+                    <path class="svg-outline" d="M14.57,11.33a1,1,0,0,1-.9-0.52L12.62,9a1,1,0,0,1,1.81-1l1,1.81A1,1,0,0,1,14.57,11.33Z" transform="translate(-1 -4.36)"/>
+                    <path class="svg-outline" d="M10.25,14.65a1,1,0,0,1-.74-0.31L8,12.86a1,1,0,1,1,1.48-1.48L11,12.86A1,1,0,0,1,10.25,14.65Z" transform="translate(-1 -4.36)"/>
+                    <path class="svg-outline" d="M44.88,40.88a1,1,0,0,1-.52-0.14l-1.81-1a1,1,0,0,1,1-1.81l1.81,1A1,1,0,0,1,44.88,40.88Z" transform="translate(-1 -4.36)"/>
+                    <path class="svg-outline" d="M6.93,19a1,1,0,0,1-.52-0.14l-1.81-1a1,1,0,0,1,1-1.81l1.81,1A1,1,0,0,1,6.93,19Z" transform="translate(-1 -4.36)"/>
+                    <path class="svg-outline" d="M47.18,35.34a1,1,0,0,1-.27,0l-2-.54a1,1,0,0,1,.54-2l2,0.54A1,1,0,0,1,47.18,35.34Z" transform="translate(-1 -4.36)"/>
+                    <path class="svg-outline" d="M4.85,24a1,1,0,0,1-.27,0l-2-.54a1,1,0,0,1,.54-2l2,0.54A1,1,0,0,1,4.85,24Z" transform="translate(-1 -4.36)"/>
+                    <g>
+                    <path class="svg-outline" d="M25,8.53a1,1,0,0,1-1-1V5.4A1,1,0,1,1,26,5.4V7.49A1,1,0,0,1,25,8.53Z" transform="translate(-1 -4.36)"/>
+                    </g>
+                    <g>
+                    <path class="svg-outline" d="M31.26,25.23a3.13,3.13,0,1,1,3.13-3.13A3.13,3.13,0,0,1,31.26,25.23Zm0-4.17a1,1,0,1,0,1,1A1,1,0,0,0,31.26,21.05Z" transform="translate(-1 -4.36)"/>
+                    </g>
+                    </g>
+                </svg>
+            </div>
+            <div class="current-reading-value">
+                30
+            </div>
+        </div>
+
+        <div class="current-reading">
+            <div class="current-reading-img">
+                <svg id="flame-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+                    <path class="svg-red" d="M433 45c50 134 24 207-32 265-61 64-156 112-223 206-89 125-104 400 217 472-135-71-164-277-18-406-38 125 32 205 119 176 85-29 141 32 139 102-1 48-20 89-69 112 209-37 293-210 293-342 0-174-155-198-77-344-93 8-125 69-116 169 6 66-63 111-114 81-41-25-40-73-4-109 77-76 107-251-115-382z" />
+                </svg>
+            </div>
+            <div id="heating-state">
+                On
+            </div>
+        </div>
+
+        <div class="temperature_readings">
+            <div id="temperature"></div>
+            <div id="target_temperature"></div>
+        </div>
+
+        <div class="schedule" />
+
+    </body>
+</html>
