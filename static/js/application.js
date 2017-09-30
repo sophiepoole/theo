@@ -10,7 +10,7 @@ $(document).ready(function() {
         }
     });
 
-    let min_divisions = 4;
+    var min_divisions = 4;
     for (var h = 0; h < 24; h++) {
         for (var m = 0; m < min_divisions; m++) {
             var main_div = $("<div>", {"class": "temperature-slider"});
@@ -24,11 +24,11 @@ $(document).ready(function() {
             var hours = h < 10 ? "0" + h : h;
             var mins = m * 60 / min_divisions;
             var minutes = mins < 10 ? "0" + mins : mins;
-            var time_div = $("<div>", {"class": "slider-time"})
+            var time_div = $("<div>", {"class": "slider-time"});
             if (m < 1) {
                 time_div.text(hours + ":" + minutes);
             } else {
-                time_div.html("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;");
+                time_div.html("&nbsp;");
             }
             main_div.append(time_div);
 

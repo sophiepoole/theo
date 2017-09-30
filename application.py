@@ -27,6 +27,7 @@ class SendStateThread(threading.Thread):
         self.should_exit = True
 
     def run(self):
+        return;
         while not self.should_exit:
             with self.lock:
                 global schedule
@@ -60,6 +61,6 @@ def schedule_change(data):
 
 if __name__ == "__main__":
     thread.start()
-    socketio.run(app, use_reloader=False)
+    socketio.run(app, use_reloader=False, host="0.0.0.0", port=5000)
     thread.stop()
     thread.join()

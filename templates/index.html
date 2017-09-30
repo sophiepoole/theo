@@ -6,97 +6,14 @@
         <link rel="stylesheet" href="static/css/jquery-ui-1.9.2.custom/jquery-ui-1.9.2.custom.min.css">
         <script src="static/js/jquery.min.js"></script>
         <script src="static/js/jquery-ui.min.js"></script>
+        <script src="static/js/jquery.ui.touch-punch.min.js"></script>
 
         <script src="static/js/socket.io.js"></script>
 
+        <link rel="stylesheet" href="static/css/stylesheet.css">
         <script src="static/js/application.js"></script>
-
-        <style>
-@font-face {
-    font-family: 'Droid Sans Mono';
-    font-style: normal;
-    font-weight: 400;
-    src: url('static/css/DroidSansMono-Regular.ttf') format('truetype');
-}
-
-body {
-    font-family: 'Droid Sans Mono', monospace;
-    color: #404040;
-}
-
-.current-reading {
-    display: inline-block;
-    vertical-align: top;
-    width: 32%;
-}
-
-.current-reading-img {
-    float: left;
-    width: 64px;
-}
-
-.current-reading-value {
-    float: left;
-    font-size: 45px;
-}
-
-#dial-svg-container {
-    margin-right: 14px;
-}
-
-#thermometer-svg {
-    margin-left: 8px;
-}
-
-#flame-svg {
-    margin-left: 5px;
-}
-
-#heating-state {
-    margin-top: 40px;
-}
-
-.svg-red {
-    fill: #c73131;
-}
-
-.svg-outline {
-    fill: #404040;
-}
-
-.ui-widget-header {
-    background: #c73131;
-}
-.ui-widget-content {
-    border: none;
-    border-color: #c73131;
-}
-.ui-slider .ui-slider-range {
-    border: 2px solid;
-}
-
-.temperature-slider {
-    display: inline-block;
-    margin-bottom: 0.2em;
-    margin-left: 1px;
-    margin-right: 1px;
-}
-.slider-widget {
-    width: 100%;
-}
-.slider-value, .slider-time {
-    width: 100%;
-    text-align: center;
-    margin-top: 0.2em;
-    margin-bottom: 0.2em;
-}
-.slider-value {
-    color: #c73131;
-}
-
-        </style>
-
     </head>
+
     <body>
 
         <div class="current-reading">
@@ -154,7 +71,7 @@ body {
         </div>
 
         <div class="current-reading">
-            <div class="current-reading-img">
+            <div id="flame-svg-container" class="current-reading-img">
                 <svg id="flame-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
                     <path class="svg-red" d="M433 45c50 134 24 207-32 265-61 64-156 112-223 206-89 125-104 400 217 472-135-71-164-277-18-406-38 125 32 205 119 176 85-29 141 32 139 102-1 48-20 89-69 112 209-37 293-210 293-342 0-174-155-198-77-344-93 8-125 69-116 169 6 66-63 111-114 81-41-25-40-73-4-109 77-76 107-251-115-382z" />
                 </svg>
@@ -164,12 +81,6 @@ body {
             </div>
         </div>
 
-        <div class="temperature_readings">
-            <div id="temperature"></div>
-            <div id="target_temperature"></div>
-        </div>
-
         <div class="schedule" />
-
     </body>
 </html>
