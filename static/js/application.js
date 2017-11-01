@@ -2,12 +2,7 @@ $(document).ready(function() {
     var socket = io.connect("http://" + document.domain + ":" + location.port);
 
     socket.on("server_state_broadcast", function(state) {
-        $("#temperature").html(state.temperature);
-        $("#target_temperature").html(state.target_temperature);
-        var bars = $('#schedule_interactive').children('input');
-        for (var i = 0; i < bars.length; ++i) {
-            bars.eq(i).val(state.schedule[i]).trigger("change");
-        }
+        $("#current_temperature").html(state.temperature);
     });
 
     var min_divisions = 4;
@@ -49,5 +44,4 @@ $(document).ready(function() {
         });
         $(this).find(".ui-slider-handle").hide();
     });
-
 });
