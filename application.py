@@ -1,15 +1,22 @@
 from flask import Flask, render_template
-
 from flask_socketio import SocketIO, emit
-
 import smbus2
+import RPi.GPIO as GPIO
 
-from random import random
 from time import sleep
+from datetime import datetime, time
 import threading
 import os
-import RPi.GPIO as GPIO
+import json
 import atexit
+
+# Schedule format:
+# [
+#   {"start": "hh:mm", "end": "hh:mm", "temperature": 19},
+#   {"start": "hh:mm", "end": "hh:mm", "temperature": 20}
+# ]
+schedule_file = "schedule.json"
+schedule = []
 
 thermometer_bus = smbus2.SMBus(1)
 thermometer_device_address = 0x48
@@ -25,13 +32,26 @@ app.config["DEBUG"] = True
 
 socketio = SocketIO(app)
 
+def load_schedule():
+    global schedule
+    try:
+        with open(schedule_file, "r") as f:
+            schedule = json.load(f)
+    except EnvironmentError:
+        pass
+
+def save_schedule():
+    with open(schedule_file, "w") as f:
+        json.dump(schedule, f)
+
 def read_thermometer():
     """Get the temperature.
 
     Query a TMP102 attached to thermometer_device_address.
     """
-    temp_reg_12bit = thermometer_bus.read_word_data(thermometer_device_address,
-                                                    0)
+    temp_reg_12bit = thermometer_bus.read_word_data(
+        thermometer_device_address, 0
+    )
     temp_low = (temp_reg_12bit & 0xff00) >> 8
     temp_high = (temp_reg_12bit & 0x00ff)
     # Convert to temp from page 6 of datasheet
@@ -46,8 +66,6 @@ def switch_heating(should_turn_heating_on):
     state = GPIO.HIGH if should_turn_heating_on else GPIO.LOW
     GPIO.output(relay_gpio_channel, state)
 
-atexit.register(switch_heating, False)
-
 class SendStateThread(threading.Thread):
     def __init__(self):
         self.lock = threading.Lock()
@@ -61,38 +79,50 @@ class SendStateThread(threading.Thread):
     def run(self):
         while not self.should_exit:
             with self.lock:
-                global schedule
-                target_temperature = 22.0
+                target_temperature = None
+                now = datetime.now().strftime("%H:%M")
+                for span in schedule:
+                    # We can just compare strings!
+                    if (span["start"] < now < span["end"]):
+                        target_temperature = span["temperature"]
+                        break
+                heating_should_be_on = False;
                 try:
                     temperature = read_thermometer()
-                    heating_should_be_on = target_temperature > temperature
+                    if (target_temperature is not None):
+                        heating_should_be_on = target_temperature > temperature
                 except:
                     temperature = None
-                    heating_should_be_on = False;
-
                 switch_heating(heating_should_be_on)
-
                 socketio.emit("server_state_broadcast",
                               {"temperature": temperature,
                                "target_temperature": target_temperature,
+                               "schedule": schedule,
                                "heating_is_on": heating_should_be_on})
             sleep(self.delay)
 
 thread = SendStateThread()
 
+
 @app.route("/")
 def index():
     return render_template("index.html")
 
-@socketio.on('schedule_change')
+@socketio.on("schedule_change")
 def schedule_change(data):
     global thread
     with thread.lock:
         global schedule
-        for key in data:
-            schedule[int(key)] = data[key]
-        print("Setting")
-        print(schedule)
+        if schedule:
+            schedule = []
+        else:
+            schedule = data
+
+
+@atexit.register
+def shutdown():
+    switch_heating(False)
+    save_schedule()
 
 
 if __name__ == "__main__":
