@@ -29,6 +29,7 @@ GPIO.setup(relay_gpio_channel, GPIO.OUT, initial=GPIO.LOW)
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "19842977771387y398yr0ue091u09ue"
 app.config["DEBUG"] = True
+app.config["SEND_FILE_MAX_AGE_DEFAULT"] = 1
 
 socketio = SocketIO(app)
 
