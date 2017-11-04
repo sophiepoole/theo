@@ -1,20 +1,44 @@
+function getWeather() {
+    $.simpleWeather({
+        location: "51.434431, -2.667650",
+        unit: 'c',
+        success: function(weather) {
+            $("#weather-icon").html('<span class="weather-icon-'
+                                    + weather.code +
+                                    '"></span>');
+            $("#weather-text").html(weather.temp);
+        },
+        error: function(error) {
+            $("#weather-icon").html('<span class="weather-icon-error"></span>');
+            $("#weather-text").html(weather.temp);
+        }
+    });
+}
+
+
 $(document).ready(function() {
     var socket = io.connect("http://" + document.domain + ":" + location.port);
 
     socket.on("server_state_broadcast", function(state) {
-        $("#current-temperature").html(state.temperature);
+        $("#temperature-text").html(state.temperature.toFixed(1));
         if (state.target_temperature == null)
             state.target_temperature = "Off"
-        $("#target-temperature").html(state.target_temperature);
+        $("#thermostat-text").html(state.target_temperature);
         if (state.heating_is_on) {
-            $("#heating-state").html("On");
+            $("#flame-path").removeClass("svg-outline").addClass("svg-red");
+            $("#boiler-text").html("On");
         } else {
-            $("#heating-state").html("Off");
+            $("#flame-path").removeClass("svg-red").addClass("svg-outline");
+            $("#boiler-text").html("Off");
         }
     });
 
     $("#dial-svg").click(function() {
-        data = [{"start": "00:00", "end": "23:59", "temperature": 20}];
+        data = [{"start": "00:00", "end": "23:59", "temperature": 23}];
         socket.emit("schedule_change", data);
     });
+
+    // Refresh every 10 mins
+    getWeather();
+    setInterval(getWeather, 600000);
 });
