@@ -12,7 +12,7 @@ body {
     margin: 0;
 }
 
-.content {
+#content {
     width: 100vw;
     height: 100vh;
     margin-top: -2.5%;
@@ -29,7 +29,7 @@ body {
 
 #weather-icon {
     font-size: 20vh;
-    transform: translate(16%, -5vh);
+    transform: translate(19%, -5vh);
 }
 
 .item-text {

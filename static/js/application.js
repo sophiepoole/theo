@@ -17,6 +17,11 @@ function getWeather() {
 
 
 $(document).ready(function() {
+    window.onresize = function() {
+        $("#content").height (window.innerHeight * 0.98);
+    }
+    window.onresize();
+
     var socket = io.connect("http://" + document.domain + ":" + location.port);
 
     socket.on("server_state_broadcast", function(state) {
