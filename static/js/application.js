@@ -38,7 +38,7 @@ $(document).ready(function() {
         }
     });
 
-    $("#dial-svg").click(function() {
+    $("#thermostat-text").click(function() {
         data = [{"start": "00:00", "end": "23:59", "temperature": 23}];
         socket.emit("schedule_change", data);
     });

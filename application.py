@@ -1,14 +1,63 @@
+#!/usr/bin/env python3
+
+import logging
+from logging.handlers import RotatingFileHandler
+import sys
+import threading
+
+handler = RotatingFileHandler('theo.log', maxBytes=1000000, backupCount=4)
+handler.setLevel(logging.INFO)
+logger = logging.getLogger()
+logger.addHandler(handler)
+
+def handle_exception(exc_type, exc_value, exc_traceback):
+    if issubclass(exc_type, KeyboardInterrupt):
+        sys.__excepthook__(exc_type, exc_value, exc_traceback)
+        return
+
+    logger.error("Uncaught exception",
+                 exc_info=(exc_type, exc_value, exc_traceback))
+    os._exit(1)
+
+sys.excepthook = handle_exception
+
+def setup_thread_excepthook():
+    """
+    Workaround for `sys.excepthook` thread bug from:
+    http://bugs.python.org/issue1230540
+
+    Call once from the main thread before creating any threads.
+    """
+
+    init_original = threading.Thread.__init__
+
+    def init(self, *args, **kwargs):
+
+        init_original(self, *args, **kwargs)
+        run_original = self.run
+
+        def run_with_except_hook(*args2, **kwargs2):
+            try:
+                run_original(*args2, **kwargs2)
+            except Exception:
+                sys.excepthook(*sys.exc_info())
+
+        self.run = run_with_except_hook
+
+    threading.Thread.__init__ = init
+
+setup_thread_excepthook()
+
+from time import sleep
+from datetime import datetime, time
+import json
+import os
+import atexit
+
 from flask import Flask, render_template
 from flask_socketio import SocketIO, emit
 import smbus2
 import RPi.GPIO as GPIO
-
-from time import sleep
-from datetime import datetime, time
-import threading
-import os
-import json
-import atexit
 
 # Schedule format:
 # [
@@ -28,8 +77,9 @@ GPIO.setup(relay_gpio_channel, GPIO.OUT, initial=GPIO.LOW)
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "19842977771387y398yr0ue091u09ue"
-app.config["DEBUG"] = True
 app.config["SEND_FILE_MAX_AGE_DEFAULT"] = 1
+
+app.logger.addHandler(handler)
 
 socketio = SocketIO(app)
 
