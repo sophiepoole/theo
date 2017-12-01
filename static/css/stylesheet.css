@@ -39,6 +39,10 @@ body, input {
 input {
     text-align: center;
     width: 50%;
+    border-style: solid;
+    border-width: 2px;
+    border-color: #404040;
+    border-radius: 15px;
 }
 
 .svg-red {

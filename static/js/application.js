@@ -34,10 +34,10 @@ $(document).ready(function() {
             state.target_temperature = ""
         $("#thermostat-text").val(state.target_temperature);
         if (state.heating_is_on) {
-            $("#flame-path").removeClass("svg-outline").addClass("svg-red");
+            $("#flame-path").attr("class", "svg-red");
             $("#boiler-text").html("On");
         } else {
-            $("#flame-path").removeClass("svg-red").addClass("svg-outline");
+            $("#flame-path").attr("class", "svg-outline");
             $("#boiler-text").html("Off");
         }
     });
