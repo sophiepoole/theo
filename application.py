@@ -3,6 +3,7 @@
 import logging
 from logging.handlers import RotatingFileHandler
 import sys
+import signal
 import threading
 
 handler = RotatingFileHandler('theo.log', maxBytes=1000000, backupCount=4)
@@ -49,7 +50,7 @@ def setup_thread_excepthook():
 setup_thread_excepthook()
 
 from time import sleep
-from datetime import datetime, time
+from datetime import datetime, time, timedelta
 import json
 import os
 import atexit
@@ -113,16 +114,21 @@ def read_thermometer():
     temp_C = float(temp) * 0.0625
     return temp_C
 
+def is_heating_on():
+    return GPIO.input(relay_gpio_channel) == GPIO.HIGH
+
 def switch_heating(should_turn_heating_on):
     state = GPIO.HIGH if should_turn_heating_on else GPIO.LOW
     GPIO.output(relay_gpio_channel, state)
 
-class SendStateThread(threading.Thread):
+class ControlThread(threading.Thread):
     def __init__(self):
         self.lock = threading.Lock()
-        self.delay = 1
+        self.loop_wait = 1
+        self.heating_wait = timedelta(minutes=2)
+        self.last_heating_change = datetime.now() - self.heating_wait
         self.should_exit = False
-        super(SendStateThread, self).__init__()
+        super(ControlThread, self).__init__()
 
     def stop(self):
         self.should_exit = True
@@ -131,28 +137,33 @@ class SendStateThread(threading.Thread):
         while not self.should_exit:
             with self.lock:
                 target_temperature = None
-                now = datetime.now().strftime("%H:%M")
+                now = datetime.now()
+                now_string = now.strftime("%H:%M")
                 for span in schedule:
                     # We can just compare strings!
-                    if (span["start"] < now < span["end"]):
-                        target_temperature = span["temperature"]
+                    if (span["start"] < now_string < span["end"]):
+                        if span["temperature"] != "":
+                            target_temperature = int(span["temperature"])
                         break
                 heating_should_be_on = False;
                 try:
                     temperature = read_thermometer()
-                    if (target_temperature is not None):
+                    if target_temperature is not None:
                         heating_should_be_on = target_temperature > temperature
                 except:
                     temperature = None
-                switch_heating(heating_should_be_on)
+                if ((heating_should_be_on != is_heating_on())
+                      and (now > self.last_heating_change + self.heating_wait)):
+                    switch_heating(heating_should_be_on)
+                    self.last_heating_change = now
                 socketio.emit("server_state_broadcast",
                               {"temperature": temperature,
                                "target_temperature": target_temperature,
                                "schedule": schedule,
-                               "heating_is_on": heating_should_be_on})
-            sleep(self.delay)
+                               "heating_is_on": is_heating_on()})
+            sleep(self.loop_wait)
 
-thread = SendStateThread()
+thread = ControlThread()
 
 
 @app.route("/")
@@ -164,16 +175,21 @@ def schedule_change(data):
     global thread
     with thread.lock:
         global schedule
-        if schedule:
-            schedule = []
-        else:
-            schedule = data
+        schedule = data
 
 
 @atexit.register
 def shutdown():
     switch_heating(False)
     save_schedule()
+
+def signal_term_handler(signal, frame):
+    thread.stop()
+    thread.join()
+    shutdown()
+    sys.exit(0)
+
+signal.signal(signal.SIGTERM, signal_term_handler)
 
 
 if __name__ == "__main__":

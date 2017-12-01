@@ -25,10 +25,14 @@ $(document).ready(function() {
     var socket = io.connect("http://" + document.domain + ":" + location.port);
 
     socket.on("server_state_broadcast", function(state) {
-        $("#temperature-text").html(state.temperature.toFixed(1));
-        if (state.target_temperature == null)
-            state.target_temperature = "Off"
-        $("#thermostat-text").html(state.target_temperature);
+        if (state.temperature === null)
+            state.temperature = "Error";
+        else
+            state.temperature = state.temperature.toFixed(1);
+        $("#temperature-text").html(state.temperature);
+        if (state.target_temperature === null)
+            state.target_temperature = ""
+        $("#thermostat-text").val(state.target_temperature);
         if (state.heating_is_on) {
             $("#flame-path").removeClass("svg-outline").addClass("svg-red");
             $("#boiler-text").html("On");
@@ -38,8 +42,10 @@ $(document).ready(function() {
         }
     });
 
-    $("#thermostat-text").click(function() {
-        data = [{"start": "00:00", "end": "23:59", "temperature": 23}];
+    $("#thermostat-text").bind("input", function() {
+        data = [{"start": "00:00",
+                 "end":   "23:59",
+                 "temperature": $(this).val()}];
         socket.emit("schedule_change", data);
     });
 
