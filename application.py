@@ -68,7 +68,7 @@ import RPi.GPIO as GPIO
 schedule_file = "schedule.json"
 schedule = []
 
-thermometer_bus = smbus2.SMBus(1)
+thermometer_bus = smbus2.SMBus(0)
 thermometer_device_address = 0x48
 
 relay_gpio_channel = 4
